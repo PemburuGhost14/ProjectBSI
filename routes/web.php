@@ -1,12 +1,9 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Back\UserController;
-use App\Http\Controllers\Front\HomeController;
-use App\Http\Controllers\Back\ArtikelController;
-use App\Http\Controllers\Back\KategoriController;
-use App\Http\Controllers\Back\dashboardController;
-
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PostController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,28 +15,25 @@ use App\Http\Controllers\Back\dashboardController;
 |
 */
 
-Route::get('/', [HomeController::class, 'index']);
-Route::get('/player', [HomeController::class, 'player'])->name('player');
-//Route::get('/', function () {
-//   return view('welcome');
-//});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [dashboardController::class, 'index']);
-
-    Route::resource('artikel', ArtikelController::class);
-
-    Route::resource('/kategori', KategoriController::class)->only([
-        'index', 'store', 'update', 'destroy'
-    ]);
-
-    Route::resource('/users', UserController::class);
-
-    Route::group(['prefix' => 'laravel-filemanager'], function () {
-        \UniSharp\LaravelFilemanager\Lfm::routes();
-    });
+Route::get('/', function () {
+    return view('home');
 });
 
-Auth::routes();
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Rute untuk Kategori
+Route::resource('categories', CategoryController::class);
+
+// Rute untuk Postingan
+Route::resource('posts', PostController::class);
+});
+Route::get('/berita', [PostController::class, 'postingan'])->name('postingan');
+Route::get('/posts/{id}', [PostController::class, 'show'])->name('post.show');
+
+require __DIR__.'/auth.php';
